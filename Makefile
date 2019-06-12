@@ -14,7 +14,7 @@ springcleaning+=$(OutPut)
 all: for_main
 
 for_main:
-	$(CC) -g main.cpp acm_encryption.c json.c aes.c encode_decode.c -o main -lpthread 
+	$(CC) -g main.cpp mac_genarate.cpp acm_encryption.c json.c aes.c encode_decode.c -o main -lpthread 
 	
 clean:
 	-@rm  *.o main

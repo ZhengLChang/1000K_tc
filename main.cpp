@@ -39,7 +39,7 @@ class Long_TCP_TEST{
 	static int sock_write (int fd, const char *buf, const int bufsize);
 	static int tcp_conn(const char *hostname, const char *service);
 	static int dump_json(Long_TCP_TEST *_this, JsonNode *json);
-    Long_TCP_TEST(const int plusNum = 0, const char url[]="172.16.0.225", const char server[]="8081", const char pwd[]="751f621ea5c8f930",
+    Long_TCP_TEST(const int plusNum = 0, const char url[]="118.24.118.155", const char server[]="8081", const char pwd[]="751f621ea5c8f930",
     		const char iv[]="26247500045987==", const char baseMac[]="00:01:02:03:04:09");
     virtual ~Long_TCP_TEST();
 	int maxNum(int a, int b);
@@ -53,6 +53,8 @@ class Long_TCP_TEST{
     char *url;
     char *server;
     int connFd;
+	int stacksize;
+	pthread_attr_t attr;
 	pthread_t thread;
 	MacGenerate *mac;
 };
@@ -77,12 +79,19 @@ Long_TCP_TEST::Long_TCP_TEST(const int macPlusNum, const char url[], const char 
   this->pwd = new char[pwdLen + 1];
   this->iv = new char[ivLen + 1];
   this->connFd = -1;
+  this->stacksize = 20480;
+  if(pthread_attr_init(&this->attr) != 0 ||
+		  pthread_attr_setstacksize(&this->attr, this->stacksize) != 0){
+	  std::cout << "pthread_attr_init error: " << strerror(errno) << std::endl;
+	  Long_TCP_TEST::is_end = 1;
+	  return;
+  }
   mac = new MacGenerate(macPlusNum, baseMac);
   std::strncpy(this->pwd, pwd, pwdLen + 1);
   std::strncpy(this->iv, iv, ivLen + 1);
   std::strncpy(this->url, url, urlLen + 1);
   std::strncpy(this->server, server, serverLen + 1);
-  if(pthread_create(&thread, NULL, thread_proc, this) != 0){
+  if(pthread_create(&thread, &attr, thread_proc, this) != 0){
 	  std::cout << "pthread_create error: " << strerror(errno) << std::endl;
   }
 }
@@ -92,6 +101,7 @@ Long_TCP_TEST::~Long_TCP_TEST(){
   delete []pwd;
   delete []iv;
   delete mac;
+  pthread_attr_destroy(&this->attr);
   if(this->connFd > 0){
 	  close(this->connFd);
 	  this->connFd = -1;
@@ -183,7 +193,8 @@ int Long_TCP_TEST::maxNum(int a, int b){
 int Long_TCP_TEST::link_to_acm(){
   if(this->connFd < 0){
 	  if((this->connFd = tcp_conn(url, server)) == -1){
-		  std::cout << "conn to " << url << "error" << std::endl;
+		  std::cout << "conn to " << url << "error: " << strerror(errno) << std::endl;
+		  Long_TCP_TEST::is_end = 1;
 		  return -1;
 	  }else{
 		  this->login_to_server();
