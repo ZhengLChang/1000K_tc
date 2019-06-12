@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <ctype.h>
 #define NEXT_CHAR(c, p) do {                    \
   c = (unsigned char) *p++;                     \
 } while (isspace (c))
@@ -15,7 +16,7 @@ size_t base64_encode (const void *data, size_t length, char *dest)
     'g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v',
     'w','x','y','z','0','1','2','3','4','5','6','7','8','9','+','/'
   };
-  const unsigned char *s = data;
+  const unsigned char *s = (const unsigned char *)data;
   const unsigned char *end = (const unsigned char *) data + length - 2;
   char *p = dest;
 
@@ -72,7 +73,7 @@ ssize_t base64_decode (const char *base64, void *dest)
 #define IS_BASE64(c) ((IS_ASCII (c) && BASE64_CHAR_TO_VALUE (c) >= 0) || c == '=')
 
   const char *p = base64;
-  char *q = dest;
+  char *q = (char *)dest;
 
   while (1)
     {
@@ -138,7 +139,7 @@ void str_encrypt(char* ip)
 {
     int b[]={3,7,8,2,9,5,4};
     int i=0;
-    while(*ip!=NULL){
+    while((*ip) != '\0'){
         *ip+=b[i%7];
         if(*ip> 122)
         *ip=*ip%122+32;
@@ -150,7 +151,7 @@ void str_decrypt(char* id)
 {
     int b[]={3,7,8,2,9,5,4};
     int i=0;
-    while(*id!=NULL){
+    while((*id) != '\0'){
         *id-=b[i%7];
         if(*id <32)
         *id=*id-32+122;

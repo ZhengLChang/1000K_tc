@@ -1387,3 +1387,39 @@ bool json_check(const JsonNode *node, char errmsg[256])
 	
 	#undef problem
 }
+
+void json_insert_number (JsonNode *json, const char *text_label, int value)
+{
+	json_append_member(json, text_label, json_mknumber(value));
+	return;
+}
+void json_array_insert_string (JsonNode *json, const char *text_value)
+{
+	json_append_element(json, json_mkstring(text_value));
+	return;
+}
+
+void json_array_insert_number (JsonNode *json, int value)
+{
+	json_append_element(json, json_mknumber(value));
+	return;
+}
+
+void json_array_insert_number_long (JsonNode *json, long value)
+{
+	json_append_element(json, json_mknumber(value));
+	return;
+}
+
+/*added by zhj*/
+void JSON_INSERT_STRING(JsonNode *json, const char *text_label, const char *text_value)
+{
+	json_append_member(json, text_label, json_mkstring(text_value));
+	return;
+}
+
+void JSON_ARRAY_INSERT_STRING(JsonNode *json, const char *text_value)
+{
+	json_append_element(json, json_mkstring(text_value));
+	return;
+}

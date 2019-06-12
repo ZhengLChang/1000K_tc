@@ -113,5 +113,16 @@ void json_remove_from_parent(JsonNode *node);
  * to errmsg (unless errmsg is NULL).
  */
 bool json_check(const JsonNode *node, char errmsg[256]);
-
+void json_insert_number (JsonNode *json, const char *text_label, int value);
+void json_array_insert_string (JsonNode *json, const char *text_value);
+void json_array_insert_number (JsonNode *json, int value);
+void json_array_insert_number_long (JsonNode *json, long value);
+void JSON_INSERT_STRING(JsonNode *json, const char *text_label, const char *text_value);
+void JSON_ARRAY_INSERT_STRING(JsonNode *json, const char *text_value);
+#define json_new_array json_mkarray
+#define json_new_object json_mkobject
+typedef JsonNode json_t;
+#define json_insert_pair_into_object json_append_member
+#define json_insert_child json_append_element
+#define json_new_string json_mkstring
 #endif

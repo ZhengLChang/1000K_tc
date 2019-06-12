@@ -43,7 +43,7 @@ char *acm_encode(uint8_t*iv, uint8_t *key, const uint8_t *data, unsigned int len
 
     AES_CBC_encrypt_buffer(&ctx, in, in_len);
 
-    encode_data = calloc(1, BASE64_LENGTH(in_len));
+    encode_data = (char *)calloc(1, BASE64_LENGTH(in_len));
     assert(encode_data != NULL);
     base64_encode(in, in_len, encode_data);
     return encode_data;
@@ -59,7 +59,7 @@ uint8_t *acm_decode(uint8_t*iv, uint8_t *key, const char *in, unsigned int *out_
     AES_init_ctx_iv(&ctx, key, iv);
     in_len = strlen(in);
     
-    decode_data = calloc(1, in_len);
+    decode_data = (char *)calloc(1, in_len);
     assert(decode_data != NULL);
     ret_len = base64_decode(in, decode_data);
 
@@ -70,7 +70,7 @@ uint8_t *acm_decode(uint8_t*iv, uint8_t *key, const char *in, unsigned int *out_
         return NULL;
     }
 
-    AES_CBC_decrypt_buffer(&ctx, decode_data, ret_len);
+    AES_CBC_decrypt_buffer(&ctx, (uint8_t*)decode_data, ret_len);
     strip_len = *(decode_data + ret_len - 1);
     if(strip_len > 16)
     {
@@ -93,7 +93,7 @@ uint8_t *acm_decode(uint8_t*iv, uint8_t *key, const char *in, unsigned int *out_
 
     *out_len = ret_len - strip_len;
 
-    return decode_data;
+    return (uint8_t *)decode_data;
 }
 
 static int acm_sopen_file(const char *in, const char *out, int *fd, int *same)
@@ -195,7 +195,7 @@ int acm_encode_file(uint8_t*iv, uint8_t *key, const char *in, const char *out)
             if(is_same)
                 is_same |= (buf[ret]) << 8;
         }
-        AES_CBC_encrypt_buffer(&ctx, buf, in_len);
+        AES_CBC_encrypt_buffer(&ctx, (uint8_t*)buf, in_len);
         ret = acm_swrite_file(fd, buf, in_len, is_same);
     }while(read_flag);
 
@@ -222,7 +222,7 @@ int acm_decode_file(uint8_t*iv, uint8_t *key, const char *in, const char *out)
     do
     {
         ret = acm_sread_file(fd, buf, sizeof(buf), is_same, &read_flag);
-        AES_CBC_decrypt_buffer(&ctx, buf, ret);
+        AES_CBC_decrypt_buffer(&ctx, (uint8_t*)buf, ret);
         acm_swrite_file(fd, buf, ret, is_same);
     }while(read_flag);
 
