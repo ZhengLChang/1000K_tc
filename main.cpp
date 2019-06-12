@@ -361,6 +361,10 @@ int main(){
     if(i % 100 == 0){
       std::cout << i << std::endl;
     }
+    usleep(500 * 1000);
+    if(Long_TCP_TEST::is_end){
+      break;
+    }
     new Long_TCP_TEST(i);
   }
 //  test.print();
