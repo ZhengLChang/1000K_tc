@@ -39,7 +39,7 @@ class Long_TCP_TEST{
 	static int sock_write (int fd, const char *buf, const int bufsize);
 	static int tcp_conn(const char *hostname, const char *service);
 	static int dump_json(Long_TCP_TEST *_this, JsonNode *json);
-    Long_TCP_TEST(const int plusNum = 0, const char url[]="118.24.118.155", const char server[]="8081", const char pwd[]="751f621ea5c8f930",
+    Long_TCP_TEST(const int plusNum = 0, const char url[]="172.16.0.225", const char server[]="8081", const char pwd[]="751f621ea5c8f930",
     		const char iv[]="26247500045987==", const char baseMac[]="00:01:02:03:04:09");
     virtual ~Long_TCP_TEST();
 	int maxNum(int a, int b);
@@ -111,7 +111,6 @@ void Long_TCP_TEST::login_to_server(){
 	char mac_addr[64] = {0};
 	JsonNode *mainJson = json_new_object();
 	JsonNode *dataJson = json_new_object();
-	JsonNode *accArrJson = json_mkarray();
     int i = 0;
     /*ipv4*/
     char ip_address[128] = "";
@@ -168,7 +167,6 @@ void Long_TCP_TEST::echo_to_server(){
 	}
 	JsonNode *mainJson = json_new_object();
 	JsonNode *dataJson = json_new_object();
-	JsonNode *accArrJson = json_mkarray();
     int i = 0;
     /*ipv4*/
     char ip_address[128] = "";
@@ -206,6 +204,7 @@ void *Long_TCP_TEST::thread_proc(void *argu){
 	fd_set fdset;
 	int maxFd = 0;
 	int ret = 0;
+  int i = 0;
 	struct timeval selTimeout;
 	Long_TCP_TEST *_this = (Long_TCP_TEST *)argu;
 	while(!is_end){
@@ -259,12 +258,18 @@ void *Long_TCP_TEST::thread_proc(void *argu){
 		              buf[rdlen] = '\0';
 
 		              decode_aes_data = (char *)acm_decode((uint8_t*)_this->iv, (uint8_t*)_this->pwd, (const char *)buf, (unsigned int *)&decode_aes_data_out_len);
+                  free(decode_aes_data);
 		         //     std::cout << "getMsg:\n" << decode_aes_data << std::endl;
 				}
 			}else{
 				std::cout << "select error occur: " << strerror(errno) << std::endl;
 			}
-			_this->echo_to_server();
+ //     _this->login_to_server();
+      i++; 
+      if(i % 99 == 0){
+        i = 0;
+			  _this->echo_to_server();
+      }
 		}
 	}
 }
@@ -277,15 +282,18 @@ int Long_TCP_TEST::dump_json(Long_TCP_TEST *_this, JsonNode *json){
 		goto ERROR;
 	}
 	data_by_aes = acm_encode((uint8_t*)_this->iv, (uint8_t *)_this->pwd, (const uint8_t *)p_str, strlen(p_str));
+  strcat(data_by_aes, "\n");
 	if(_this->connFd >= 0 &&
 			Long_TCP_TEST::sock_write(_this->connFd, data_by_aes, strlen(data_by_aes)) <= 0){
 		goto ERROR;
 	}
+  /*
 	if(_this->connFd >= 0 &&
 			Long_TCP_TEST::sock_write(_this->connFd, ARRAY_STR_LEN("\n")) <= 0){
 		std::cout << "sock_write error: " <<  strerror(errno) << std::endl;
 		goto ERROR;
 	}
+  */
 	xfree(p_str);
 	xfree(data_by_aes);
 	if(json){

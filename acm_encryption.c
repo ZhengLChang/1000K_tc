@@ -37,7 +37,7 @@ char *acm_encode(uint8_t*iv, uint8_t *key, const uint8_t *data, unsigned int len
 
     AES_init_ctx_iv(&ctx, key, iv);
 
-    in = (uint8_t *)alloca(in_len);
+    in = (uint8_t *)alloca(in_len + 16);
     memcpy(in, data, real_len);
     memset(in + real_len, in_len - real_len, in_len - real_len);
 
